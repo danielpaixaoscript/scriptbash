@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Define o diretório do seu site WordPress
+wp_directory="/var/www/acontecero.com.br/htdocs"
+
+# Verifica se o diretório existe
+if [ ! -d "$wp_directory" ]; then
+    echo "O diretório do WordPress não foi encontrado. Verifique o caminho fornecido."
+    exit 1
+fi
+
+# Nome do arquivo de resultado
+result_file="$wp_directory/resultado.txt"
+
+# Acesse o diretório do WordPress
+cd "$wp_directory"
+
+# Verifique o arquivo nginx.conf
+if [ -f nginx.conf ]; then
+    echo "Verificando o arquivo nginx.conf..." >> "$result_file"
+    sudo -u www-data mv nginx.conf nginx.conf.backup
+fi
+
+# Desative todos os plugins
+sudo -u www-data wp plugin deactivate --all >> "$result_file"
+
+# Ative o tema padrão
+sudo -u www-data wp theme activate twentytwenty >> "$result_file"
+
+# Verifique se o erro 500 ainda persiste
+echo "Verificando se o erro 500 ainda ocorre após desativar todos os plugins e ativar o tema padrão." >> "$result_file"
+
+# Execute testes adicionais, como verificar os logs de erro do servidor, as permissões de arquivos, etc.
+# Adicione qualquer comando adicional para diagnóstico aqui.
+
+# Restaure o arquivo nginx.conf original, se necessário
+if [ -f nginx.conf.backup ]; then
+    echo "Restaurando o arquivo nginx.conf original." >> "$result_file"
+    sudo -u www-data mv nginx.conf.backup nginx.conf
+fi
+
+# Saia do diretório do WordPress
+cd -
+
+echo "Diagnóstico concluído. Certifique-se de verificar os logs de erro do servidor Nginx e outros possíveis problemas." >> "$result_file"
+echo "O resultado do teste foi salvo em $result_file."
